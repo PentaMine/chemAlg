@@ -1,0 +1,5 @@
+keyboard==0.13.5
+matplotlib==3.10.6
+mouse==0.7.1
+pyserial==3.5
+xlsxwriter==3.2.9
