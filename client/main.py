@@ -3,13 +3,11 @@ import datetime
 import serial
 import matplotlib.pyplot as plt
 import keyboard
-import mouse
 import xlsxwriter
 
 saveMode = False
 width = 1
 xOffset = 0
-
 
 def export_current_fig():
     global x, y
@@ -34,7 +32,7 @@ def keyboard_hook(keyboard_event: keyboard.KeyboardEvent):
 
     if keyboard_event.event_type != "down":
         return
-    print(keyboard_event)
+
     if keyboard_event.name == "x":
         xOffset = 0
         saveMode = not saveMode
@@ -53,16 +51,9 @@ def keyboard_hook(keyboard_event: keyboard.KeyboardEvent):
         export_current_fig()
 
 
-def mouse_hook(mouse_event):
-    if type(mouse_event) != mouse.WheelEvent:
-        return
-    print(mouse_event)
-
-
 keyboard.hook(keyboard_hook)
-mouse.hook(mouse_hook)
 
-ser = serial.Serial("COM5", 115200, timeout=0.0)
+ser = serial.Serial("/dev/ttyUSB1", 115200, timeout=0.0)
 
 buf = b""
 x = []
@@ -91,21 +82,19 @@ while True:
             print("malformed")
             continue
 
-        t = int.from_bytes(buf[:4], signed=False)
-        v = int.from_bytes(buf[4:6], signed=False)
+        t = int.from_bytes(buf[:4], signed=False, byteorder="big")
+        v = int.from_bytes(buf[4:6], signed=False, byteorder="big")
 
         v = (v / 4095) * 3.3
 
         x.append(t)
         y.append(v)
 
-        if n % 50 == 0:
+        if n % 200 == 0:
             graph.remove()
-            # print(t)
-            # plotting newer graph
             graph = plt.plot(x, y, color='g')[0]
-            plt.xlim(t - width * 1000000, t)
-            plt.title("")
+            plt.xlim((x[-1] - width * 1000000) - xOffset, x[-1] - xOffset)
+            plt.title(f"xOffset: {round(-xOffset / 1000)} ms, width: {round(width * 1000)} ms")
             plt.pause(.0001)
 
         buf = b""
