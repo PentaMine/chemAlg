@@ -10,7 +10,7 @@ void setup() {
 
 void loop() {
   t = micros();
-  v = analogRead(35);
+  v = analogRead(25);
   
   Serial.write((int)((t >> 24) & 0xFF) );
   Serial.write((int)((t >> 16) & 0xFF) );

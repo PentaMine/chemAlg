@@ -9,6 +9,7 @@ saveMode = False
 width = 1
 xOffset = 0
 
+
 def export_current_fig():
     global x, y
     displayX = list(filter(lambda e: (x[-1] - width * 1000000) - xOffset < e < x[-1] - xOffset, x))
@@ -53,7 +54,7 @@ def keyboard_hook(keyboard_event: keyboard.KeyboardEvent):
 
 keyboard.hook(keyboard_hook)
 
-ser = serial.Serial("/dev/ttyUSB1", 115200, timeout=0.0)
+ser = serial.Serial("COM5", 115200, timeout=0.0)
 
 buf = b""
 x = []
@@ -61,7 +62,7 @@ y = []
 
 plt.ion()
 graph = plt.plot(x, y)[0]
-plt.ylim(-.1, 3.4)
+plt.ylim(-.1, 8)
 plt.xlabel("t / μs")
 plt.ylabel("U / V")
 plt.pause(.1)
@@ -85,15 +86,18 @@ while True:
         t = int.from_bytes(buf[:4], signed=False, byteorder="big")
         v = int.from_bytes(buf[4:6], signed=False, byteorder="big")
 
-        v = (v / 4095) * 3.3
+        v = (v+103.78)/465.17
+
 
         x.append(t)
         y.append(v)
 
         if n % 200 == 0:
             graph.remove()
+            print(v)
             graph = plt.plot(x, y, color='g')[0]
             plt.xlim((x[-1] - width * 1000000) - xOffset, x[-1] - xOffset)
+            plt.ylim(-.1, 8)
             plt.title(f"xOffset: {round(-xOffset / 1000)} ms, width: {round(width * 1000)} ms")
             plt.pause(.0001)
 
